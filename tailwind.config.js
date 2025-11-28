@@ -11,6 +11,7 @@ export default {
       },
       fontFamily: {
         sans: ["Pretendard", "sans-serif"],
+        permanent: [' "Permanent Marker"', "cursive"],
       },
     },
   },

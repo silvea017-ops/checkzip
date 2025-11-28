@@ -1,15 +1,13 @@
 // utils/constants.js
 
-// 카테고리 정의 (알라딘 API CategoryId 기준)
+// 카테고리 정의 (연파랑/남색 테마)
 export const CATEGORIES = [
-  { id: 0, name: "전체", icon: "📚", color: "#6C63FF" },
-  { id: 1, name: "소설", icon: "📖", color: "#FF6B9D" },
-  { id: 336, name: "경제경영", icon: "💼", color: "#4CAF50" },
-  { id: 351, name: "자기계발", icon: "🌱", color: "#FFC107" },
-  { id: 798, name: "에세이", icon: "✍️", color: "#9C27B0" },
-  { id: 656, name: "건강", icon: "💪", color: "#00BCD4" },
-  { id: 50, name: "어린이", icon: "🧒", color: "#FF9800" },
-  { id: 108, name: "과학", icon: "🔬", color: "#3F51B5" },
+  { id: 0, name: "전체", icon: "📚", color: "#1E3A8A" },
+  { id: 1, name: "소설", icon: "📖", color: "#3B82F6" },
+  { id: 336, name: "경제경영", icon: "💼", color: "#2563EB" },
+  { id: 351, name: "자기계발", icon: "🌱", color: "#60A5FA" },
+  { id: 798, name: "에세이", icon: "✍️", color: "#1D4ED8" },
+  { id: 656, name: "건강", icon: "💪", color: "#3B82F6" },
 ];
 
 // 온보딩 장르 선택 옵션
@@ -29,30 +27,34 @@ export const SEARCH_TYPES = [
   { value: "Title", label: "제목" },
   { value: "Author", label: "저자" },
   { value: "Publisher", label: "출판사" },
-  { value: "Keyword", label: "키워드" },
 ];
 
-// 정렬 옵션
-export const SORT_OPTIONS = [
-  { value: "Accuracy", label: "정확도순" },
-  { value: "PublishTime", label: "출간일순" },
-  { value: "Title", label: "제목순" },
-  { value: "SalesPoint", label: "판매량순" },
-  { value: "CustomerRating", label: "평점순" },
+// 인기 검색어
+export const POPULAR_SEARCHES = [
+  "퓨처 셀프",
+  "트렌드 코리아 2025",
+  "세이노의 가르침",
+  "불편한 편의점",
+  "데일 카네기 인간관계론",
+  "아몬드",
+  "역행자",
+  "관계의 본질",
 ];
 
-// 색상 테마
+// 색상 테마 (연파랑/남색)
 export const COLORS = {
-  primary: "#6C63FF",
-  secondary: "#FFD66C",
-  background: "#F5F5F5",
-  text: "#1E1E1E",
-  textLight: "#666666",
-  border: "#E0E0E0",
+  primary: "#2563EB", // 밝은 파랑
+  primaryDark: "#1E3A8A", // 남색
+  secondary: "#60A5FA", // 연파랑
+  accent: "#3B82F6", // 중간 파랑
+  background: "#F8FAFC",
+  text: "#1E293B",
+  textLight: "#64748B",
+  border: "#E2E8F0",
   cardBg: "#FFFFFF",
-  success: "#4CAF50",
-  error: "#F44336",
-  warning: "#FF9800",
+  success: "#10B981",
+  error: "#EF4444",
+  warning: "#F59E0B",
 };
 
 // 로컬 스토리지 키

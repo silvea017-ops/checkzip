@@ -1,253 +1,90 @@
-import React, { useState, useEffect } from "react";
-import {
-  Search,
-  X,
-  ChevronLeft,
-  ChevronRight,
-  Star,
-  Heart,
-  ShoppingCart,
-  Book,
-  User,
-  TrendingUp,
-  Sparkles,
-  Check,
-  ArrowRight,
-  Calendar,
-  Building,
-} from "lucide-react";
+// App.jsx
+import React, { useState, useEffect, useContext } from "react";
+import { TrendingUp, Sparkles } from "lucide-react";
 
-// ============ 상수 ============
-const CATEGORIES = [
-  { id: 0, name: "전체", icon: "📚" },
-  { id: 1, name: "소설", icon: "📖" },
-  { id: 336, name: "경제경영", icon: "💼" },
-  { id: 351, name: "자기계발", icon: "🌱" },
-  { id: 798, name: "에세이", icon: "✍️" },
-  { id: 656, name: "건강", icon: "💪" },
-];
+// 실제 컴포넌트 import
+import AladinAPI from "./services/aladinAPI";
+import Header from "./components/common/Header";
+import HeroWithSwiper from "./components/home/HeroWithSwiper"; // 통합 컴포넌트 사용
+import SearchSection from "./components/home/SearchSection";
+import InfiniteScrollBanner from "./components/home/InfiniteScrollBanner";
+import BookSlider from "./components/book/BookSlider";
+import BookDetailModal from "./components/book/BookDetailModal";
+import OnboardingSurvey from "./components/onboarding/OnboardingSurvey";
+import QuickRecommendSurvey from "./components/onboarding/QuickRecommendSurvey";
+import RecommendationPage from "./components/recommendation/RecommendationPage";
+import Loading from "./components/common/Loading";
+import SearchResults from "./components/search/SearchResults";
 
-const GENRE_OPTIONS = [
-  { id: 1, name: "소설/문학", icon: "📖", categoryId: 1 },
-  { id: 2, name: "경제/경영", icon: "💼", categoryId: 336 },
-  { id: 3, name: "자기계발", icon: "🌱", categoryId: 351 },
-  { id: 4, name: "에세이", icon: "✍️", categoryId: 798 },
-  { id: 5, name: "인문/사회", icon: "🧠", categoryId: 656 },
-  { id: 6, name: "과학/기술", icon: "🔬", categoryId: 108 },
-  { id: 7, name: "예술/문화", icon: "🎨", categoryId: 55890 },
-  { id: 8, name: "건강/취미", icon: "💪", categoryId: 55889 },
-];
-
-const SEARCH_TYPES = [
-  { value: "Title", label: "제목" },
-  { value: "Author", label: "저자" },
-  { value: "Publisher", label: "출판사" },
-];
-
-// ============ API Service ============
-const AladinAPI = {
-  TTB_KEY: "ttbdlsgks12031544001",
-  BASE_URL: "https://www.aladin.co.kr/ttb/api",
-
-  search: async (query, queryType = "Title") => {
-    try {
-      const url = `${AladinAPI.BASE_URL}/ItemSearch.aspx?ttbkey=${
-        AladinAPI.TTB_KEY
-      }&Query=${encodeURIComponent(
-        query
-      )}&QueryType=${queryType}&MaxResults=20&start=1&SearchTarget=Book&output=js&Version=20131101`;
-      const response = await fetch(url);
-      return await response.json();
-    } catch (error) {
-      console.error("Search Error:", error);
-      return { item: [] };
-    }
-  },
-
-  getBestSeller: async (categoryId = 0) => {
-    try {
-      const url = `${AladinAPI.BASE_URL}/ItemList.aspx?ttbkey=${AladinAPI.TTB_KEY}&QueryType=BestSeller&MaxResults=20&start=1&SearchTarget=Book&output=js&Version=20131101&CategoryId=${categoryId}`;
-      const response = await fetch(url);
-      return await response.json();
-    } catch (error) {
-      console.error("BestSeller Error:", error);
-      return { item: [] };
-    }
-  },
-
-  getNewBooks: async (categoryId = 0) => {
-    try {
-      const url = `${AladinAPI.BASE_URL}/ItemList.aspx?ttbkey=${AladinAPI.TTB_KEY}&QueryType=ItemNewSpecial&MaxResults=20&start=1&SearchTarget=Book&output=js&Version=20131101&CategoryId=${categoryId}`;
-      const response = await fetch(url);
-      return await response.json();
-    } catch (error) {
-      console.error("NewBooks Error:", error);
-      return { item: [] };
-    }
-  },
-};
-
-// ============ BookCard 컴포넌트 ============
-const BookCard = ({ book, onClick }) => {
-  const [isFavorite, setIsFavorite] = useState(false);
-
-  return (
-    <div
-      onClick={() => onClick(book)}
-      className="w-40 sm:w-48 flex-shrink-0 cursor-pointer group"
-    >
-      <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all overflow-hidden">
-        <div className="relative aspect-[3/4] overflow-hidden bg-gray-100">
-          <img
-            src={book.cover}
-            alt={book.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-          />
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all">
-            <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsFavorite(!isFavorite);
-                }}
-                className="p-2 bg-white rounded-full hover:scale-110 transition-transform"
-              >
-                <Heart
-                  className={`w-4 h-4 ${
-                    isFavorite ? "fill-red-500 text-red-500" : "text-gray-700"
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="p-3 sm:p-4">
-          <h3 className="font-bold text-sm sm:text-base text-[#1E1E1E] line-clamp-2 mb-1">
-            {book.title}
-          </h3>
-          <p className="text-xs sm:text-sm text-[#666] line-clamp-1 mb-2">
-            {book.author}
-          </p>
-          {book.customerReviewRank && (
-            <div className="flex items-center gap-1 mb-2">
-              <Star className="w-4 h-4 fill-[#FFD66C] text-[#FFD66C]" />
-              <span className="text-sm font-medium">
-                {(book.customerReviewRank / 2).toFixed(1)}
-              </span>
-            </div>
-          )}
-          <div className="text-base font-bold text-[#6C63FF]">
-            {book.priceSales?.toLocaleString()}원
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ============ BookSlider 컴포넌트 ============
-const BookSlider = ({ title, books, icon, onBookClick }) => {
-  const sliderRef = React.useRef(null);
-
-  const scroll = (direction) => {
-    if (sliderRef.current) {
-      const scrollAmount = direction === "left" ? -400 : 400;
-      sliderRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
-    }
-  };
-
-  return (
-    <section className="mb-12">
-      <div className="flex items-center justify-between mb-6 px-4 sm:px-0">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">{icon}</span>
-          <h2 className="text-xl sm:text-2xl font-bold text-[#1E1E1E]">
-            {title}
-          </h2>
-        </div>
-        <div className="hidden sm:flex gap-2">
-          <button
-            onClick={() => scroll("left")}
-            className="p-2 rounded-full bg-white shadow-md hover:bg-[#6C63FF] hover:text-white transition"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => scroll("right")}
-            className="p-2 rounded-full bg-white shadow-md hover:bg-[#6C63FF] hover:text-white transition"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-      <div
-        ref={sliderRef}
-        className="flex gap-4 overflow-x-auto scrollbar-hide px-4 sm:px-0 pb-4"
-      >
-        {books?.map((book, i) => (
-          <BookCard key={book.itemId || i} book={book} onClick={onBookClick} />
-        ))}
-      </div>
-    </section>
-  );
-};
-
-// ============ 메인 App ============
 export default function App() {
-  const [page, setPage] = useState("onboarding");
-  const [selectedGenres, setSelectedGenres] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(0);
+  // --------------------------
+  //1. 상태 관리
+  // --------------------------
+
+  // usecontext 사용해서 전역관리하고 훅 축소하기
+  // useconetet
+
   const [bestSellers, setBestSellers] = useState([]);
   const [newBooks, setNewBooks] = useState([]);
-  const [recommendBooks, setRecommendBooks] = useState([]);
-  const [selectedBook, setSelectedBook] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchType, setSearchType] = useState("Title");
-  const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [showSurvey, setShowSurvey] = useState(false);
+  const [showQuickSurvey, setShowQuickSurvey] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
-  useEffect(() => {
-    const completed = localStorage.getItem("onboarding_complete");
-    if (completed) {
-      setPage("home");
-      const saved = localStorage.getItem("selected_genres");
-      if (saved) setSelectedGenres(JSON.parse(saved));
+  useContext();
+
+  // 추천 페이지 상태
+  const [showRecommendation, setShowRecommendation] = useState(false);
+  const [recommendedBooks, setRecommendedBooks] = useState([]);
+  const [recommendContext, setRecommendContext] = useState(null);
+
+  // --------------------------
+  // 2. 네비게이션 클릭 처리
+  // --------------------------
+  const handleNavClick = (page) => {
+    if (page === "recommendation") {
+      setShowSurvey(true);
     }
-  }, []);
+    if (page === "bestseller") window.location.href = "/bestseller";
+    if (page === "new") window.location.href = "/new";
+  };
 
-  useEffect(() => {
-    if (page === "home") {
-      loadBooks();
-    }
-  }, [selectedCategory, page]);
+  // --------------------------
+  // 3. 로고 클릭 → 홈으로 초기화
+  // --------------------------
+  const handleLogoClick = () => {
+    console.log("Logo clicked, resetting...");
+    setSearchResults([]);
+    setSearchQuery("");
+    setSelectedBook(null);
+    setShowRecommendation(false);
+    setRecommendedBooks([]);
+    setRecommendContext(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
+  // --------------------------
+  // 4. 책 API 불러오기
+  // --------------------------
   const loadBooks = async () => {
     setLoading(true);
     try {
+      console.log("Loading bestsellers and new books...");
       const [best, newB] = await Promise.all([
-        AladinAPI.getBestSeller(selectedCategory),
-        AladinAPI.getNewBooks(selectedCategory),
+        AladinAPI.getBestSeller(0),
+        AladinAPI.getNewBooks(0),
       ]);
+
+      console.log("Books loaded:", {
+        bestsellers: best.item?.length,
+        newBooks: newB.item?.length,
+      });
+
       setBestSellers(best.item || []);
       setNewBooks(newB.item || []);
-
-      if (selectedGenres.length > 0) {
-        const genreMap = {
-          1: 1,
-          2: 336,
-          3: 351,
-          4: 798,
-          5: 656,
-          6: 108,
-          7: 55890,
-          8: 55889,
-        };
-        const randomGenre =
-          selectedGenres[Math.floor(Math.random() * selectedGenres.length)];
-        const categoryId = genreMap[randomGenre] || 0;
-        const rec = await AladinAPI.getBestSeller(categoryId);
-        setRecommendBooks(rec.item || []);
-      }
     } catch (error) {
       console.error("Failed to load books:", error);
     } finally {
@@ -255,327 +92,212 @@ export default function App() {
     }
   };
 
-  const handleOnboardingComplete = (genres) => {
-    setSelectedGenres(genres);
-    localStorage.setItem("selected_genres", JSON.stringify(genres));
-    localStorage.setItem("onboarding_complete", "true");
-    setPage("home");
-  };
+  // --------------------------
+  // 5. 컴포넌트 최초 실행 시 책 로딩
+  // --------------------------
+  useEffect(() => {
+    console.log("App mounted, loading books...");
+    loadBooks();
+  }, []);
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
-    setLoading(true);
-    setPage("search");
+  // --------------------------
+  // 6. 검색 처리
+  // --------------------------
+  const handleSearch = async (query, searchType = "Title") => {
+    if (!query.trim()) return;
+
+    console.log("Searching for:", query, "Type:", searchType);
+    setIsSearching(true);
+    setSearchQuery(query);
+    setShowRecommendation(false);
+
     try {
-      const data = await AladinAPI.search(searchQuery, searchType);
+      const data = await AladinAPI.search(query, searchType);
+      console.log("Search results:", data.item?.length, "books");
       setSearchResults(data.item || []);
     } catch (error) {
       console.error("Search failed:", error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleBookClick = (book) => {
+    console.log("Opening book detail for:", book.title);
+    setSelectedBook(book);
+  };
+
+  const handleSurveyComplete = async (surveyData) => {
+    console.log("Survey completed with data:", surveyData);
+    setShowSurvey(false);
+    setLoading(true);
+
+    try {
+      const GENRE_MAP = {
+        1: "소설/문학",
+        2: "경제/경영",
+        3: "자기계발",
+        4: "에세이",
+        5: "인문/사회",
+        6: "과학/기술",
+        7: "예술/문화",
+        8: "건강/취미",
+      };
+
+      const genreNames = surveyData.genres
+        .map((id) => GENRE_MAP[id])
+        .filter(Boolean);
+
+      const data = await AladinAPI.getRecommendedBooks(
+        genreNames,
+        surveyData.goal,
+        surveyData.time
+      );
+
+      setRecommendedBooks(data.item || []);
+      setRecommendContext({
+        type: "full",
+        genres: genreNames,
+        goal: surveyData.goal,
+        time: surveyData.time,
+      });
+      setShowRecommendation(true);
+      setSearchResults([]);
+    } catch (error) {
+      console.error("Failed to load recommendations:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // ========== 온보딩 페이지 ==========
-  if (page === "onboarding") {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#6C63FF] to-[#9C8FFF] flex items-center justify-center p-4">
-        <div className="max-w-4xl w-full">
-          <div className="text-center mb-12">
-            <div className="inline-block mb-4">
-              <span className="text-6xl">📚</span>
-            </div>
-            <h1 className="text-4xl font-bold text-white mb-3">
-              어떤 책을 좋아하시나요?
-            </h1>
-            <p className="text-lg text-white/90">
-              관심있는 분야를 선택하면 맞춤 추천을 받을 수 있어요
-            </p>
-            <p className="text-sm text-white/70 mt-2">
-              (최소 1개 이상 선택해주세요)
-            </p>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-            {GENRE_OPTIONS.map((genre) => {
-              const isSelected = selectedGenres.includes(genre.id);
-              return (
-                <button
-                  key={genre.id}
-                  onClick={() =>
-                    setSelectedGenres((prev) =>
-                      prev.includes(genre.id)
-                        ? prev.filter((id) => id !== genre.id)
-                        : [...prev, genre.id]
-                    )
-                  }
-                  className={`relative p-6 rounded-2xl transition-all ${
-                    isSelected
-                      ? "bg-white text-[#6C63FF] shadow-xl scale-105"
-                      : "bg-white/20 text-white hover:bg-white/30"
-                  }`}
-                >
-                  {isSelected && (
-                    <div className="absolute top-2 right-2 w-6 h-6 bg-[#6C63FF] rounded-full flex items-center justify-center">
-                      <Check className="w-4 h-4 text-white" />
-                    </div>
-                  )}
-                  <div className="text-4xl mb-3">{genre.icon}</div>
-                  <div className="font-bold text-sm">{genre.name}</div>
-                </button>
-              );
-            })}
-          </div>
-          <div className="text-center">
-            <button
-              onClick={() =>
-                selectedGenres.length > 0 &&
-                handleOnboardingComplete(selectedGenres)
-              }
-              disabled={selectedGenres.length === 0}
-              className={`inline-flex items-center gap-2 px-8 py-4 rounded-full font-bold text-lg transition-all ${
-                selectedGenres.length > 0
-                  ? "bg-white text-[#6C63FF] hover:shadow-2xl hover:scale-105"
-                  : "bg-white/30 text-white/50 cursor-not-allowed"
-              }`}
-            >
-              시작하기 <ArrowRight className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // --------------------------
+  // 9. 빠른 설문 완료
+  // --------------------------
+  const handleQuickSurveyComplete = async (quickData) => {
+    console.log("Quick survey completed:", quickData);
+    setShowQuickSurvey(false);
+    setLoading(true);
 
-  // ========== 홈 페이지 ==========
+    try {
+      const data = await AladinAPI.getQuickRecommendations(
+        quickData.mood,
+        quickData.length,
+        quickData.genre
+      );
+
+      setRecommendedBooks(data.item || []);
+      setRecommendContext({
+        type: "quick",
+        mood: quickData.mood,
+        length: quickData.length,
+        genre: quickData.genre,
+      });
+      setShowRecommendation(true);
+      setSearchResults([]);
+    } catch (error) {
+      console.error("Failed to load quick recommendations:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // --------------------------
+  // 10. UI 렌더링
+  // --------------------------
   return (
-    <div className="min-h-screen bg-[#F5F5F5]">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div
-              className="flex items-center gap-2 cursor-pointer"
-              onClick={() => setPage("home")}
-            >
-              <Book className="w-8 h-8 text-[#6C63FF]" />
-              <span className="text-xl font-bold">Aladin Insight</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setPage("search")}
-                className="p-2 hover:bg-gray-100 rounded-full"
-              >
-                <Search className="w-5 h-5" />
-              </button>
-              <button className="p-2 hover:bg-gray-100 rounded-full">
-                <Heart className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-slate-50">
+      {/* 헤더 */}
+      <Header onLogoClick={handleLogoClick} onNavClick={handleNavClick} />
 
-      {/* 검색 페이지 */}
-      {page === "search" && (
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="flex gap-2 mb-8">
-            <select
-              value={searchType}
-              onChange={(e) => setSearchType(e.target.value)}
-              className="px-4 py-3 border rounded-xl"
-            >
-              {SEARCH_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-              placeholder="검색어를 입력하세요"
-              className="flex-1 px-4 py-3 border rounded-xl"
-            />
-            <button
-              onClick={handleSearch}
-              className="px-6 py-3 bg-[#6C63FF] text-white rounded-xl hover:bg-[#5850E6]"
-            >
-              검색
-            </button>
-          </div>
-          {loading ? (
-            <div className="flex justify-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#6C63FF] border-t-transparent"></div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {searchResults.map((book, i) => (
-                <BookCard
-                  key={book.itemId || i}
-                  book={book}
-                  onClick={setSelectedBook}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* 홈 페이지 */}
-      {page === "home" && (
+      {/* 추천 결과 페이지 */}
+      {showRecommendation ? (
+        <RecommendationPage
+          books={recommendedBooks}
+          context={recommendContext}
+          onBookClick={handleBookClick}
+          onBack={handleLogoClick}
+        />
+      ) : (
         <>
-          <section className="bg-gradient-to-br from-[#6C63FF] to-[#9C8FFF] py-20 px-4">
-            <div className="max-w-7xl mx-auto text-center">
-              <h1 className="text-5xl font-bold text-white mb-4">
-                당신을 위한 책을 찾아보세요
-              </h1>
-              <p className="text-xl text-white/90 mb-8">
-                AI 기반 맞춤 추천으로 새로운 독서 경험을
-              </p>
-              <button
-                onClick={() => setPage("search")}
-                className="px-8 py-4 bg-white text-[#6C63FF] rounded-2xl font-bold hover:shadow-2xl transition"
-              >
-                책 검색하기
-              </button>
+          {/* 히어로 섹션 with 스와이퍼 */}
+          <HeroWithSwiper
+            onSurveyClick={() => setShowSurvey(true)}
+            onQuickRecommendClick={() => setShowQuickSurvey(true)}
+          />
+
+          {/* 검색 섹션 */}
+          <section className="bg-white py-8 border-b border-slate-200">
+            <div className="max-w-4xl mx-auto px-4">
+              <SearchSection
+                onSearch={handleSearch}
+                initialQuery={searchQuery}
+              />
             </div>
           </section>
 
-          <div className="max-w-7xl mx-auto pt-8">
-            <div className="flex gap-3 overflow-x-auto px-4 pb-4">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-full font-medium transition-all ${
-                    selectedCategory === cat.id
-                      ? "bg-[#6C63FF] text-white shadow-lg scale-105"
-                      : "bg-white text-[#666] hover:bg-gray-50 shadow-md"
-                  }`}
-                >
-                  <span>{cat.icon}</span>
-                  <span>{cat.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* 검색 결과 */}
+          {searchResults.length > 0 && (
+            <SearchResults
+              results={searchResults}
+              loading={isSearching}
+              onBookClick={handleBookClick}
+              query={searchQuery}
+            />
+          )}
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-            {loading ? (
-              <div className="flex justify-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#6C63FF] border-t-transparent"></div>
-              </div>
-            ) : (
-              <>
-                {recommendBooks.length > 0 && (
-                  <BookSlider
-                    title="당신을 위한 추천"
-                    icon="✨"
-                    books={recommendBooks}
-                    onBookClick={setSelectedBook}
-                  />
-                )}
-                <BookSlider
-                  title="베스트셀러"
-                  icon="🔥"
-                  books={bestSellers}
-                  onBookClick={setSelectedBook}
-                />
-                <BookSlider
-                  title="신간 도서"
-                  icon="📚"
-                  books={newBooks}
-                  onBookClick={setSelectedBook}
-                />
-              </>
-            )}
-          </div>
+          {/* 무한 스크롤 배너 */}
+          {!isSearching && searchResults.length === 0 && (
+            <InfiniteScrollBanner books={bestSellers} />
+          )}
+
+          {/* 베스트셀러 & 신간 */}
+          {!isSearching && searchResults.length === 0 && (
+            <div className="max-w-7xl mx-auto px-4 py-12 space-y-12">
+              <BookSlider
+                books={bestSellers}
+                onBookClick={handleBookClick}
+                title="베스트셀러 추천"
+                icon={<TrendingUp className="w-6 h-6 text-blue-600" />}
+              />
+
+              <BookSlider
+                books={newBooks}
+                onBookClick={handleBookClick}
+                title="신간 도서"
+                icon={<Sparkles className="w-6 h-6 text-blue-600" />}
+              />
+            </div>
+          )}
         </>
       )}
 
+      {/* 로딩 */}
+      {(loading || isSearching) && <Loading />}
+
       {/* 도서 상세 모달 */}
       {selectedBook && (
-        <div className="fixed inset-0 bg-black/50 z-50 overflow-y-auto flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-4xl w-full p-8 relative">
-            <button
-              onClick={() => setSelectedBook(null)}
-              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full"
-            >
-              <X className="w-6 h-6" />
-            </button>
-            <div className="flex flex-col sm:flex-row gap-8">
-              <img
-                src={selectedBook.cover}
-                alt={selectedBook.title}
-                className="w-full sm:w-64 rounded-2xl shadow-xl"
-              />
-              <div className="flex-1">
-                <h1 className="text-3xl font-bold mb-3">
-                  {selectedBook.title}
-                </h1>
-                <div className="space-y-2 mb-4 text-[#666]">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    <span>{selectedBook.author}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Building className="w-4 h-4" />
-                    <span>{selectedBook.publisher}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>{selectedBook.pubDate}</span>
-                  </div>
-                </div>
-                {selectedBook.customerReviewRank && (
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-5 h-5 ${
-                            i < Math.floor(selectedBook.customerReviewRank / 2)
-                              ? "fill-[#FFD66C] text-[#FFD66C]"
-                              : "text-gray-300"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className="font-bold text-lg">
-                      {(selectedBook.customerReviewRank / 2).toFixed(1)}
-                    </span>
-                  </div>
-                )}
-                <div className="text-3xl font-bold text-[#6C63FF] mb-6">
-                  {selectedBook.priceSales?.toLocaleString()}원
-                </div>
-                <button
-                  onClick={() => window.open(selectedBook.link, "_blank")}
-                  className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-[#6C63FF] text-white rounded-xl font-bold hover:bg-[#5850E6]"
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                  구매하기
-                </button>
-                <p className="mt-6 text-[#666] leading-relaxed">
-                  {selectedBook.description}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <BookDetailModal
+          book={selectedBook}
+          onClose={() => setSelectedBook(null)}
+        />
       )}
 
-      <style jsx>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
+      {/* 전체 설문조사 모달 */}
+      {showSurvey && (
+        <OnboardingSurvey
+          onComplete={handleSurveyComplete}
+          onClose={() => setShowSurvey(false)}
+        />
+      )}
+
+      {/* 빠른 설문조사 모달 */}
+      {showQuickSurvey && (
+        <QuickRecommendSurvey
+          onComplete={handleQuickSurveyComplete}
+          onClose={() => setShowQuickSurvey(false)}
+        />
+      )}
     </div>
   );
 }
