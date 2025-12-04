@@ -2,7 +2,7 @@
 
 const AladinAPI = {
   // API 설정
-  TTB_KEY: process.env.REACT_APP_TTB_KEY,
+  TTB_KEY = import.meta.env.VITE_TTB_KEY;
   PROXY_URL: process.env.REACT_APP_PROXY_URL,
   BASE_URL: process.env.REACT_APP_BASE_URL,
 
