@@ -1,11 +1,11 @@
 // App.jsx
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { TrendingUp, Sparkles } from "lucide-react";
 
-// 실제 컴포넌트 import
 import AladinAPI from "./services/aladinAPI";
 import Header from "./components/common/Header";
-import HeroWithSwiper from "./components/home/HeroWithSwiper"; // 통합 컴포넌트 사용
+import HeroWithSwiper from "./components/home/HeroWithSwiper";
 import SearchSection from "./components/home/SearchSection";
 import InfiniteScrollBanner from "./components/home/InfiniteScrollBanner";
 import BookSlider from "./components/book/BookSlider";
@@ -17,12 +17,7 @@ import Loading from "./components/common/Loading";
 import SearchResults from "./components/search/SearchResults";
 
 export default function App() {
-  // --------------------------
-  //1. 상태 관리
-  // --------------------------
-
-  // usecontext 사용해서 전역관리하고 훅 축소하기
-  // useconetet
+  const navigate = useNavigate();
 
   const [bestSellers, setBestSellers] = useState([]);
   const [newBooks, setNewBooks] = useState([]);
@@ -34,27 +29,23 @@ export default function App() {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  useContext();
-
   // 추천 페이지 상태
   const [showRecommendation, setShowRecommendation] = useState(false);
   const [recommendedBooks, setRecommendedBooks] = useState([]);
   const [recommendContext, setRecommendContext] = useState(null);
 
-  // --------------------------
-  // 2. 네비게이션 클릭 처리
-  // --------------------------
+  // 네비게이션 클릭 처리 - navigate 사용
   const handleNavClick = (page) => {
     if (page === "recommendation") {
       setShowSurvey(true);
+    } else if (page === "bestseller") {
+      navigate("/bestseller");
+    } else if (page === "new") {
+      navigate("/new");
     }
-    if (page === "bestseller") window.location.href = "/bestseller";
-    if (page === "new") window.location.href = "/new";
   };
 
-  // --------------------------
-  // 3. 로고 클릭 → 홈으로 초기화
-  // --------------------------
+  // 로고 클릭 → 홈으로 초기화
   const handleLogoClick = () => {
     console.log("Logo clicked, resetting...");
     setSearchResults([]);
@@ -63,12 +54,11 @@ export default function App() {
     setShowRecommendation(false);
     setRecommendedBooks([]);
     setRecommendContext(null);
+    navigate("/"); // React Router의 navigate 사용
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // --------------------------
-  // 4. 책 API 불러오기
-  // --------------------------
+  // 책 API 불러오기
   const loadBooks = async () => {
     setLoading(true);
     try {
@@ -92,17 +82,13 @@ export default function App() {
     }
   };
 
-  // --------------------------
-  // 5. 컴포넌트 최초 실행 시 책 로딩
-  // --------------------------
+  // 컴포넌트 최초 실행 시 책 로딩
   useEffect(() => {
     console.log("App mounted, loading books...");
     loadBooks();
   }, []);
 
-  // --------------------------
-  // 6. 검색 처리
-  // --------------------------
+  // 검색 처리
   const handleSearch = async (query, searchType = "Title") => {
     if (!query.trim()) return;
 
@@ -171,9 +157,7 @@ export default function App() {
     }
   };
 
-  // --------------------------
-  // 9. 빠른 설문 완료
-  // --------------------------
+  // 빠른 설문 완료
   const handleQuickSurveyComplete = async (quickData) => {
     console.log("Quick survey completed:", quickData);
     setShowQuickSurvey(false);
@@ -202,9 +186,7 @@ export default function App() {
     }
   };
 
-  // --------------------------
-  // 10. UI 렌더링
-  // --------------------------
+  // UI 렌더링
   return (
     <div className="min-h-screen bg-slate-50">
       {/* 헤더 */}
