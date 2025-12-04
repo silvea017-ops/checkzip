@@ -1,3 +1,9 @@
+console.log("🔍 Environment Variables:", {
+  TTB_KEY: import.meta.env.VITE_TTB_KEY,
+  BASE_URL: import.meta.env.VITE_BASE_URL,
+  PROXY_URL: import.meta.env.VITE_PROXY_URL,
+});
+
 // App.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
